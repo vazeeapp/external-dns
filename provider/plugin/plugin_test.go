@@ -11,9 +11,7 @@ import (
 )
 
 func TestRecords(t *testing.T) {
-	// instantiate a test http server
 	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// return a json as response
 		w.Write([]byte(`[{
 			"dnsName" : "test.example.com"
 		}]`))
@@ -27,4 +25,25 @@ func TestRecords(t *testing.T) {
 	require.Equal(t, []*endpoint.Endpoint{&endpoint.Endpoint{
 		DNSName: "test.example.com",
 	}}, endpoints)
+}
+
+func TestApplyChanges(t *testing.T) {
+	successfulApplyChanges := true
+	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if successfulApplyChanges {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}))
+	defer svr.Close()
+
+	provider := NewPluginProvider(svr.URL)
+	err := provider.ApplyChanges(context.TODO(), nil)
+	require.Nil(t, err)
+
+	successfulApplyChanges = false
+
+	err = provider.ApplyChanges(context.TODO(), nil)
+	require.NotNil(t, err)
 }

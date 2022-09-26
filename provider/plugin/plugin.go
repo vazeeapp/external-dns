@@ -25,7 +25,7 @@ func NewPluginProvider(url string) *PluginProvider {
 	}
 }
 
-// Records will make a GET call to /records
+// Records will make a GET call to p.remoteServer and return the results
 func (p PluginProvider) Records(ctx context.Context) ([]*endpoint.Endpoint, error) {
 	req, err := http.NewRequest("GET", p.remoteServer, nil)
 	if err != nil {
@@ -52,7 +52,20 @@ func (p PluginProvider) Records(ctx context.Context) ([]*endpoint.Endpoint, erro
 	return endpoints, nil
 }
 
-// ApplyChanges will make a POST to /records
+// ApplyChanges will make a POST to p.remoteServer with the changes
 func (p PluginProvider) ApplyChanges(ctx context.Context, changes *plan.Changes) error {
+	req, err := http.NewRequest("POST", p.remoteServer, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to apply changes with code %d", resp.StatusCode)
+	}
 	return nil
 }
