@@ -194,6 +194,7 @@ type Config struct {
 	IBMCloudConfigFile                string
 	TencentCloudConfigFile            string
 	TencentCloudZoneType              string
+	PluginProviderURL                 string
 }
 
 var defaultConfig = &Config{
@@ -331,6 +332,7 @@ var defaultConfig = &Config{
 	IBMCloudConfigFile:          "/etc/kubernetes/ibmcloud.json",
 	TencentCloudConfigFile:      "/etc/kubernetes/tencent-cloud.json",
 	TencentCloudZoneType:        "",
+	PluginProviderURL:           "localhost:8888",
 }
 
 // NewConfig returns new Config object
@@ -420,7 +422,7 @@ func (cfg *Config) ParseFlags(args []string) error {
 	app.Flag("exclude-target-net", "Exclude target nets (optional)").StringsVar(&cfg.ExcludeTargetNets)
 
 	// Flags related to providers
-	app.Flag("provider", "The DNS provider where the DNS records will be created (required, options: aws, aws-sd, godaddy, google, azure, azure-dns, azure-private-dns, bluecat, cloudflare, rcodezero, digitalocean, dnsimple, akamai, infoblox, dyn, designate, coredns, skydns, ibmcloud, inmemory, ovh, pdns, oci, exoscale, linode, rfc2136, ns1, transip, vinyldns, rdns, scaleway, vultr, ultradns, gandi, safedns, tencentcloud)").Required().PlaceHolder("provider").EnumVar(&cfg.Provider, "aws", "aws-sd", "google", "azure", "azure-dns", "azure-private-dns", "alibabacloud", "cloudflare", "rcodezero", "digitalocean", "dnsimple", "akamai", "infoblox", "dyn", "designate", "coredns", "skydns", "ibmcloud", "inmemory", "ovh", "pdns", "oci", "exoscale", "linode", "rfc2136", "ns1", "transip", "vinyldns", "rdns", "scaleway", "vultr", "ultradns", "godaddy", "bluecat", "gandi", "safedns", "tencentcloud")
+	app.Flag("provider", "The DNS provider where the DNS records will be created (required, options: aws, aws-sd, godaddy, google, azure, azure-dns, azure-private-dns, bluecat, cloudflare, rcodezero, digitalocean, dnsimple, akamai, infoblox, dyn, designate, coredns, skydns, ibmcloud, inmemory, ovh, pdns, oci, exoscale, linode, rfc2136, ns1, transip, vinyldns, rdns, scaleway, vultr, ultradns, gandi, safedns, tencentcloud)").Required().PlaceHolder("provider").EnumVar(&cfg.Provider, "aws", "aws-sd", "google", "azure", "azure-dns", "azure-private-dns", "alibabacloud", "cloudflare", "rcodezero", "digitalocean", "dnsimple", "akamai", "infoblox", "dyn", "designate", "coredns", "skydns", "ibmcloud", "inmemory", "ovh", "pdns", "oci", "exoscale", "linode", "rfc2136", "ns1", "transip", "vinyldns", "rdns", "scaleway", "vultr", "ultradns", "godaddy", "bluecat", "gandi", "safedns", "tencentcloud", "plugin")
 	app.Flag("domain-filter", "Limit possible target zones by a domain suffix; specify multiple times for multiple domains (optional)").Default("").StringsVar(&cfg.DomainFilter)
 	app.Flag("exclude-domains", "Exclude subdomains (optional)").Default("").StringsVar(&cfg.ExcludeDomains)
 	app.Flag("regex-domain-filter", "Limit possible domains and target zones by a Regex filter; Overrides domain-filter (optional)").Default(defaultConfig.RegexDomainFilter.String()).RegexpVar(&cfg.RegexDomainFilter)
@@ -556,6 +558,9 @@ func (cfg *Config) ParseFlags(args []string) error {
 	app.Flag("log-format", "The format in which log messages are printed (default: text, options: text, json)").Default(defaultConfig.LogFormat).EnumVar(&cfg.LogFormat, "text", "json")
 	app.Flag("metrics-address", "Specify where to serve the metrics and health check endpoint (default: :7979)").Default(defaultConfig.MetricsAddress).StringVar(&cfg.MetricsAddress)
 	app.Flag("log-level", "Set the level of logging. (default: info, options: panic, debug, info, warning, error, fatal").Default(defaultConfig.LogLevel).EnumVar(&cfg.LogLevel, allLogLevelsAsStrings()...)
+
+	// Plugin provider
+	app.Flag("plugin-provider-url", "The URL of the remote endpoint to call for the plugin provider (default: localhost:8888)").Default(defaultConfig.MetricsAddress).StringVar(&cfg.PluginProviderURL)
 
 	_, err := app.Parse(args)
 	if err != nil {
