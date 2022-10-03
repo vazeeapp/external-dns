@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -54,7 +55,12 @@ func (p PluginProvider) Records(ctx context.Context) ([]*endpoint.Endpoint, erro
 
 // ApplyChanges will make a POST to p.remoteServer with the changes
 func (p PluginProvider) ApplyChanges(ctx context.Context, changes *plan.Changes) error {
-	req, err := http.NewRequest("POST", p.remoteServer, nil)
+	b, err := json.Marshal(changes)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", p.remoteServer, bytes.NewBuffer(b))
 	if err != nil {
 		return err
 	}

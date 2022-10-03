@@ -332,7 +332,7 @@ var defaultConfig = &Config{
 	IBMCloudConfigFile:          "/etc/kubernetes/ibmcloud.json",
 	TencentCloudConfigFile:      "/etc/kubernetes/tencent-cloud.json",
 	TencentCloudZoneType:        "",
-	PluginProviderURL:           "localhost:8888",
+	PluginProviderURL:           "http://localhost:8888",
 }
 
 // NewConfig returns new Config object
@@ -560,7 +560,7 @@ func (cfg *Config) ParseFlags(args []string) error {
 	app.Flag("log-level", "Set the level of logging. (default: info, options: panic, debug, info, warning, error, fatal").Default(defaultConfig.LogLevel).EnumVar(&cfg.LogLevel, allLogLevelsAsStrings()...)
 
 	// Plugin provider
-	app.Flag("plugin-provider-url", "The URL of the remote endpoint to call for the plugin provider (default: localhost:8888)").Default(defaultConfig.MetricsAddress).StringVar(&cfg.PluginProviderURL)
+	app.Flag("plugin-provider-url", "The URL of the remote endpoint to call for the plugin provider (default: :8888)").Default(defaultConfig.PluginProviderURL).StringVar(&cfg.PluginProviderURL)
 
 	_, err := app.Parse(args)
 	if err != nil {
